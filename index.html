@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tu credencial — Foto Estudio Graciela</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,400;75..100,500;75..100,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+<style>
+  :root{
+    --ink:#241d16; --paper:#f6efe5; --accent:#c5572a;
+    --line:#d8cdbd; --muted:#7d7267; --card:#fffdf9;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+       font-family:Archivo,system-ui,sans-serif;font-size:15px;line-height:1.6}
+  .wrap{max-width:900px;margin:0 auto;padding:28px 20px 80px}
+
+  .eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+           color:var(--muted);font-weight:500;font-stretch:87%}
+  h1{font-size:30px;font-weight:700;margin:6px 0 4px;letter-spacing:-.02em}
+  .sub{color:var(--muted);margin:0 0 28px}
+
+  .caras{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media(max-width:680px){.caras{grid-template-columns:1fr}}
+
+  .slot{border:1px solid var(--line);background:var(--card);border-radius:10px;
+        overflow:hidden;transition:border-color .15s}
+  .slot.lista{border-color:var(--accent)}
+  .slot h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:500;
+           margin:0;padding:12px 14px;border-bottom:1px solid var(--line);
+           display:flex;justify-content:space-between;align-items:center;font-stretch:87%}
+  .tick{color:var(--accent);font-weight:700}
+  .lienzo{position:relative;aspect-ratio:1014/639;background:#efe7db;
+          display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .lienzo img{width:100%;height:100%;object-fit:cover;display:block}
+  .lienzo .hint{text-align:center;color:var(--muted);font-size:13px;padding:0 22px}
+  .lienzo .hint b{display:block;color:var(--ink);font-size:15px;margin-bottom:2px}
+  .segura{position:absolute;inset:5.6%;border:1px dashed rgba(36,29,22,.28);
+          border-radius:3px;pointer-events:none}
+  .pie{padding:10px 14px;border-top:1px solid var(--line);font-size:12.5px;
+       color:var(--muted);display:flex;justify-content:space-between;align-items:center;min-height:41px}
+  .pie button{background:none;border:none;color:var(--accent);cursor:pointer;
+              font:inherit;font-size:12.5px;padding:0;text-decoration:underline}
+
+  .datos{margin-top:26px;display:grid;grid-template-columns:150px 1fr;gap:14px}
+  @media(max-width:680px){.datos{grid-template-columns:1fr}}
+  label{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+        color:var(--muted);font-weight:500;margin-bottom:5px;font-stretch:87%}
+  input,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:7px;
+                 background:var(--card);font:inherit;color:var(--ink)}
+  textarea{resize:vertical;min-height:44px}
+  input:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+
+  .enviar{margin-top:26px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .btn{background:var(--accent);color:#fff;border:none;padding:13px 26px;border-radius:8px;
+       font:inherit;font-weight:500;cursor:pointer;letter-spacing:.01em}
+  .btn:disabled{background:var(--line);color:var(--muted);cursor:not-allowed}
+  .nota{color:var(--muted);font-size:13px}
+
+  .modal{position:fixed;inset:0;background:rgba(36,29,22,.88);display:none;
+         flex-direction:column;padding:16px;z-index:50}
+  .modal.on{display:flex}
+  .modal .marco{flex:1;min-height:0;background:#000;border-radius:8px;overflow:hidden}
+  .modal img{max-width:100%;display:block}
+  .barra{display:flex;gap:12px;justify-content:space-between;align-items:center;
+         padding:14px 4px 4px;color:#f6efe5;flex-wrap:wrap}
+  .barra .txt{font-size:13px;opacity:.75;max-width:60%}
+  .barra .acciones{display:flex;gap:10px}
+  .btn-fantasma{background:none;border:1px solid rgba(246,239,229,.4);color:#f6efe5;
+                padding:10px 18px;border-radius:8px;font:inherit;cursor:pointer}
+
+  .aviso{padding:26px;border:1px solid var(--line);border-radius:10px;background:var(--card);
+         text-align:center;margin-top:40px}
+  .aviso h2{margin:0 0 8px;font-size:20px}
+  .aviso p{margin:0;color:var(--muted)}
+  .oculto{display:none}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div id="cargando" class="aviso"><p>Abriendo tu enlace…</p></div>
+
+  <div id="bloqueado" class="aviso oculto">
+    <h2>Enlace no disponible</h2>
+    <p id="bloqTexto"></p>
+  </div>
+
+  <div id="app" class="oculto">
+    <div class="eyebrow">Foto Estudio Graciela</div>
+    <h1>Arma tu credencial</h1>
+    <p class="sub">Sube el diseño de cada cara. Encuadra dentro del marco y listo.</p>
+
+    <div class="caras">
+      <div class="slot" id="slot-frente">
+        <h2>Frente <span class="tick oculto" id="tick-frente">✓ lista</span></h2>
+        <div class="lienzo" onclick="elegir('frente')">
+          <img id="img-frente" class="oculto" alt="">
+          <div class="hint" id="hint-frente"><b>Toca para subir</b>JPG o PNG</div>
+          <div class="segura"></div>
+        </div>
+        <div class="pie">
+          <span id="pie-frente">Zona segura punteada</span>
+          <button class="oculto" id="btn-frente" onclick="event.stopPropagation();elegir('frente')">Cambiar</button>
+        </div>
+      </div>
+
+      <div class="slot" id="slot-reverso">
+        <h2>Reverso <span class="tick oculto" id="tick-reverso">✓ lista</span></h2>
+        <div class="lienzo" onclick="elegir('reverso')">
+          <img id="img-reverso" class="oculto" alt="">
+          <div class="hint" id="hint-reverso"><b>Toca para subir</b>JPG o PNG</div>
+          <div class="segura"></div>
+        </div>
+        <div class="pie">
+          <span id="pie-reverso">Zona segura punteada</span>
+          <button class="oculto" id="btn-reverso" onclick="event.stopPropagation();elegir('reverso')">Cambiar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="datos">
+      <div>
+        <label for="cantidad">Cuántas tarjetas</label>
+        <input type="number" id="cantidad" value="1" min="1" max="500">
+      </div>
+      <div>
+        <label for="notas">Algo que debamos saber</label>
+        <textarea id="notas" placeholder="Opcional"></textarea>
+      </div>
+    </div>
+
+    <div class="enviar">
+      <button class="btn" id="btnEnviar" disabled onclick="enviar()">Enviar al estudio</button>
+      <span class="nota" id="estado">Faltan las dos caras.</span>
+    </div>
+  </div>
+
+  <div id="listo" class="aviso oculto">
+    <h2>Recibido</h2>
+    <p id="listoTexto"></p>
+  </div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="marco"><img id="recortar" alt=""></div>
+  <div class="barra">
+    <span class="txt">Arrastra y haz zoom. Lo que quede dentro del marco es lo que se imprime.</span>
+    <span class="acciones">
+      <button class="btn-fantasma" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn" onclick="aplicar()">Usar este encuadre</button>
+    </span>
+  </div>
+</div>
+
+<input type="file" id="archivo" accept="image/*" style="display:none">
+
+<script src="config.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+<script>
+var TOKEN = new URLSearchParams(location.search).get('t') || '';
+var ANCHO = 1014, ALTO = 639;
+var caras = { frente: null, reverso: null };
+var caraActiva = null, cropper = null;
+
+async function api(accion, datos) {
+  var r = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(Object.assign({ accion: accion }, datos || {}))
+  });
+  var d = await r.json();
+  if (!d.ok) throw new Error(d.error || 'Algo salió mal.');
+  return d;
+}
+
+(async function () {
+  try {
+    var r = await api('validarToken', { token: TOKEN });
+    ANCHO = r.ancho; ALTO = r.alto;
+    document.getElementById('cargando').classList.add('oculto');
+    document.getElementById('app').classList.remove('oculto');
+  } catch (e) {
+    document.getElementById('cargando').classList.add('oculto');
+    document.getElementById('bloqueado').classList.remove('oculto');
+    document.getElementById('bloqTexto').textContent = e.message;
+  }
+})();
+
+function elegir(cara) {
+  caraActiva = cara;
+  var inp = document.getElementById('archivo');
+  inp.value = '';
+  inp.click();
+}
+
+document.getElementById('archivo').addEventListener('change', function (ev) {
+  var f = ev.target.files[0];
+  if (!f) return;
+  var lector = new FileReader();
+  lector.onload = function (e) { abrirModal(e.target.result); };
+  lector.readAsDataURL(f);
+});
+
+function abrirModal(dataUrl) {
+  var img = document.getElementById('recortar');
+  img.src = dataUrl;
+  document.getElementById('modal').classList.add('on');
+  if (cropper) cropper.destroy();
+  cropper = new Cropper(img, {
+    aspectRatio: ANCHO / ALTO, viewMode: 1, autoCropArea: 1,
+    dragMode: 'move', background: false, responsive: true
+  });
+}
+
+function cerrarModal() {
+  document.getElementById('modal').classList.remove('on');
+  if (cropper) { cropper.destroy(); cropper = null; }
+}
+
+function aplicar() {
+  if (!cropper) return;
+  var canvas = cropper.getCroppedCanvas({
+    width: ANCHO, height: ALTO, imageSmoothingQuality: 'high', fillColor: '#fff'
+  });
+  caras[caraActiva] = canvas.toDataURL('image/jpeg', 0.92);
+
+  var img = document.getElementById('img-' + caraActiva);
+  img.src = caras[caraActiva];
+  img.classList.remove('oculto');
+  document.getElementById('hint-' + caraActiva).classList.add('oculto');
+  document.getElementById('tick-' + caraActiva).classList.remove('oculto');
+  document.getElementById('btn-' + caraActiva).classList.remove('oculto');
+  document.getElementById('pie-' + caraActiva).textContent = ANCHO + ' × ' + ALTO + ' px';
+  document.getElementById('slot-' + caraActiva).classList.add('lista');
+
+  cerrarModal();
+  revisar();
+}
+
+function revisar() {
+  var falta = [];
+  if (!caras.frente) falta.push('el frente');
+  if (!caras.reverso) falta.push('el reverso');
+  var btn = document.getElementById('btnEnviar');
+  var est = document.getElementById('estado');
+  if (falta.length) {
+    btn.disabled = true;
+    est.textContent = 'Falta ' + falta.join(' y ') + '.';
+  } else {
+    btn.disabled = false;
+    est.textContent = 'Todo listo. Al enviar, este enlace se cierra.';
+  }
+}
+
+async function enviar() {
+  var btn = document.getElementById('btnEnviar');
+  btn.disabled = true;
+  document.getElementById('estado').textContent = 'Enviando…';
+  try {
+    var r = await api('guardarPedido', {
+      token: TOKEN, frente: caras.frente, reverso: caras.reverso,
+      cantidad: document.getElementById('cantidad').value,
+      notas: document.getElementById('notas').value
+    });
+    document.getElementById('app').classList.add('oculto');
+    document.getElementById('listo').classList.remove('oculto');
+    document.getElementById('listoTexto').textContent =
+      'Tu pedido ' + r.pedido + ' llegó al estudio. Te avisamos cuando esté impreso.';
+  } catch (e) {
+    btn.disabled = false;
+    document.getElementById('estado').textContent = e.message;
+  }
+}
+</script>
+</body>
+</html>
