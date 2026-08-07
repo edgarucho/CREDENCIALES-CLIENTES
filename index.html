@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tu credencial — Foto Estudio Graciela</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Archivo:wdth,wght@75..100,400;75..100,500;75..100,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+<style>
+  :root{
+    --ink:#241d16;
+    --ink-2:#332a20;
+    --ink-3:#463a2c;
+    --paper:#f6efe5;
+    --paper-2:#efe6d8;
+    --card:#fffdf9;
+    --accent:#c5572a;
+    --accent-luz:#e07a4d;
+    --verde:#6d8c5a;
+    --line:#ddd2c0;
+    --muted:#7d7267;
+    --muted-osc:#a1917f;
+    --radio-card:3.4%;
+    --sombra:0 1px 2px rgba(36,29,22,.06), 0 8px 24px -12px rgba(36,29,22,.25);
+  }
+
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:Archivo,system-ui,sans-serif;font-size:15.5px;line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'JetBrains Mono',ui-monospace,monospace;
+        font-size:11.5px;letter-spacing:.02em;font-variant-numeric:tabular-nums}
+  .rotulo{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;
+          font-weight:600;font-stretch:87%}
+
+  .marco{max-width:1000px;margin:0 auto;padding:0 20px}
+
+  /* ---------------------------------------------------------- encabezado */
+  header{padding:34px 0 26px}
+  .firma{display:flex;align-items:center;gap:11px;color:var(--muted)}
+  .lente{width:19px;height:19px;border-radius:50%;border:1.5px solid var(--accent);
+         position:relative;flex:none}
+  .lente::after{content:'';position:absolute;inset:4px;border-radius:50%;background:var(--accent)}
+  h1{font-family:'Bricolage Grotesque',Archivo,sans-serif;font-weight:700;
+     font-size:clamp(31px,5.6vw,46px);line-height:1.02;letter-spacing:-.03em;
+     margin:19px 0 0;max-width:15ch}
+  .entrada{color:var(--muted);margin:13px 0 0;max-width:46ch;font-size:16.5px}
+
+  /* --------------------------------------------------------------- mesa */
+  .mesa{background:var(--ink);border-radius:18px;padding:clamp(18px,3.4vw,32px);
+        margin-top:32px;position:relative;overflow:hidden}
+  .mesa::before{content:'';position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(120% 90% at 50% -20%,rgba(255,255,255,.055),transparent 62%)}
+  .mesa-tope{display:flex;justify-content:space-between;align-items:baseline;
+             gap:14px;margin-bottom:18px;position:relative;flex-wrap:wrap}
+  .mesa-tope .rotulo{color:var(--muted-osc)}
+  .avance{display:flex;align-items:center;gap:8px;color:var(--muted-osc)}
+  .marca{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.16);
+         transition:background .3s,transform .3s}
+  .marca.on{background:var(--verde);transform:scale(1.25)}
+
+  .caras{display:grid;grid-template-columns:1fr 1fr;gap:clamp(16px,3vw,26px);position:relative}
+  @media(max-width:700px){.caras{grid-template-columns:1fr}}
+
+  .cara-tope{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .cara-tope .rotulo{color:var(--paper)}
+  .sello{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;
+         color:var(--verde);opacity:0;transition:opacity .3s;font-stretch:87%}
+  .sello.on{opacity:1}
+
+  .plaquita{position:relative;padding:13px}
+  .corte{position:absolute;width:11px;height:11px;opacity:.3;pointer-events:none}
+  .corte::before,.corte::after{content:'';position:absolute;background:var(--muted-osc)}
+  .corte::before{width:100%;height:1px;top:0}
+  .corte::after{height:100%;width:1px;left:0}
+  .c-si{top:0;left:0}
+  .c-sd{top:0;right:0;transform:scaleX(-1)}
+  .c-ii{bottom:0;left:0;transform:scaleY(-1)}
+  .c-id{bottom:0;right:0;transform:scale(-1)}
+
+  .tarjeta{
+    position:relative;aspect-ratio:1014/639;border-radius:var(--radio-card);
+    background:var(--ink-2);border:1px solid rgba(255,255,255,.09);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+    overflow:hidden;transition:border-color .22s,transform .22s,box-shadow .22s;
+    box-shadow:0 10px 30px -14px rgba(0,0,0,.75)}
+  .tarjeta:hover{border-color:rgba(255,255,255,.24);transform:translateY(-2px)}
+  .tarjeta:focus-visible{outline:2px solid var(--accent-luz);outline-offset:3px}
+  .tarjeta.puesta{border-color:rgba(109,140,90,.55)}
+  .tarjeta img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+  .tarjeta img.revelar{animation:revelar .55s ease-out}
+  @keyframes revelar{from{opacity:0;filter:blur(9px) saturate(.4)}to{opacity:1;filter:none}}
+
+  .invita{text-align:center;padding:0 24px;color:var(--muted-osc);position:relative;z-index:1}
+  .cruz{width:34px;height:34px;margin:0 auto 11px;border-radius:50%;
+        border:1px dashed rgba(255,255,255,.28);display:flex;align-items:center;
+        justify-content:center;font-size:19px;color:var(--paper);font-weight:400;line-height:1}
+  .invita b{display:block;color:var(--paper);font-size:15px;font-weight:500;margin-bottom:2px}
+  .invita span{font-size:12.5px}
+
+  .zona{position:absolute;inset:5.6%;border:1px dashed rgba(246,239,229,.34);
+        border-radius:2.2%;pointer-events:none;z-index:2}
+
+  .cara-pie{display:flex;justify-content:space-between;align-items:center;
+            margin-top:10px;min-height:22px;gap:10px}
+  .cara-pie .mono{color:var(--muted-osc)}
+  .relevo{background:none;border:none;color:var(--accent-luz);cursor:pointer;
+          font:inherit;font-size:12.5px;padding:2px 0;text-decoration:underline;
+          text-underline-offset:3px;opacity:0;pointer-events:none;transition:opacity .3s}
+  .relevo.on{opacity:1;pointer-events:auto}
+  .relevo:hover{color:var(--paper)}
+
+  .mesa-pie{margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.09);
+            color:var(--muted-osc);font-size:13px;display:flex;gap:9px;align-items:flex-start}
+  .mesa-pie .guion{color:var(--accent-luz);flex:none}
+
+  /* ------------------------------------------------------------ detalles */
+  .detalles{margin-top:34px;display:grid;grid-template-columns:170px 1fr;gap:18px}
+  @media(max-width:700px){.detalles{grid-template-columns:1fr}}
+  label{display:block;color:var(--muted);margin-bottom:7px}
+  input,textarea{width:100%;padding:12px 14px;border:1px solid var(--line);
+                 border-radius:9px;background:var(--card);font:inherit;color:var(--ink);
+                 transition:border-color .18s,box-shadow .18s}
+  textarea{resize:vertical;min-height:50px}
+  input:focus,textarea:focus{outline:none;border-color:var(--accent);
+                             box-shadow:0 0 0 3px rgba(197,87,42,.13)}
+  input::placeholder,textarea::placeholder{color:#b9ab99}
+
+  /* --------------------------------------------------------------- envío */
+  .repisa{position:sticky;bottom:0;margin-top:30px;padding:15px 0 22px;
+          background:linear-gradient(to top,var(--paper) 62%,rgba(246,239,229,0));
+          display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  .btn{background:var(--accent);color:#fff;border:none;padding:15px 32px;border-radius:10px;
+       font:inherit;font-weight:600;font-size:16px;cursor:pointer;
+       box-shadow:var(--sombra);transition:background .18s,transform .12s,box-shadow .18s}
+  .btn:hover:not(:disabled){background:#b34c22;transform:translateY(-1px)}
+  .btn:active:not(:disabled){transform:translateY(0)}
+  .btn:disabled{background:var(--paper-2);color:#b0a291;cursor:not-allowed;box-shadow:none}
+  .btn:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+  .dictamen{color:var(--muted);font-size:14px;flex:1;min-width:200px}
+  .dictamen.completo{color:var(--verde);font-weight:500}
+
+  /* ---------------------------------------------------------------- velo */
+  .velo{position:fixed;inset:0;background:rgba(36,29,22,.93);z-index:90;
+        display:none;align-items:center;justify-content:center;padding:22px;
+        -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+  .velo.on{display:flex}
+  .velo-caja{max-width:390px;width:100%;text-align:center;color:var(--paper)}
+  .prensa{width:150px;aspect-ratio:1014/639;margin:0 auto 26px;border-radius:4%;
+          background:var(--ink-3);border:1px solid rgba(255,255,255,.14);
+          position:relative;overflow:hidden}
+  .prensa::after{content:'';position:absolute;top:0;bottom:0;width:36%;
+    background:linear-gradient(90deg,transparent,rgba(224,122,77,.85),transparent);
+    animation:barrer 1.25s ease-in-out infinite}
+  @keyframes barrer{0%{left:-40%}100%{left:104%}}
+  .velo h2{font-family:'Bricolage Grotesque',Archivo,sans-serif;font-weight:700;
+           font-size:23px;margin:0 0 9px;letter-spacing:-.02em}
+  .velo p{margin:0;color:var(--muted-osc);font-size:15px}
+  .no-cierres{margin-top:22px;padding:11px 16px;border-radius:9px;
+              background:rgba(197,87,42,.17);color:#f0a67f;font-size:13.5px;font-weight:500}
+  .medidor{height:4px;background:rgba(255,255,255,.12);border-radius:99px;
+           overflow:hidden;margin-top:22px}
+  .medidor i{display:block;height:100%;width:0;background:var(--accent-luz);
+             border-radius:99px;transition:width .3s ease-out}
+  .medidor.indef i{width:38%;animation:vaiven 1.15s ease-in-out infinite}
+  @keyframes vaiven{0%{margin-left:-38%}100%{margin-left:100%}}
+
+  /* -------------------------------------------------------------- modal */
+  .modal{position:fixed;inset:0;background:rgba(36,29,22,.94);display:none;
+         flex-direction:column;padding:16px;z-index:80}
+  .modal.on{display:flex}
+  .modal .taller{flex:1;min-height:0;background:#0f0c09;border-radius:10px;overflow:hidden}
+  .modal img{max-width:100%;display:block}
+  .mandos{display:flex;gap:14px;justify-content:space-between;align-items:center;
+          padding:16px 4px 6px;color:var(--paper);flex-wrap:wrap}
+  .mandos .guia{font-size:13.5px;color:var(--muted-osc);max-width:56%;min-width:180px}
+  .mandos .juego{display:flex;gap:11px;margin-left:auto}
+  .btn-hueco{background:none;border:1px solid rgba(246,239,229,.32);color:var(--paper);
+             padding:13px 22px;border-radius:10px;font:inherit;cursor:pointer;
+             transition:border-color .18s}
+  .btn-hueco:hover{border-color:var(--paper)}
+
+  /* -------------------------------------------------------------- avisos */
+  .parte{max-width:470px;margin:70px auto;padding:34px 30px;border:1px solid var(--line);
+         border-radius:14px;background:var(--card);text-align:center;box-shadow:var(--sombra)}
+  .parte h2{font-family:'Bricolage Grotesque',Archivo,sans-serif;font-weight:700;
+            font-size:25px;margin:0 0 10px;letter-spacing:-.02em}
+  .parte p{margin:0;color:var(--muted)}
+  .palomita{width:52px;height:52px;border-radius:50%;background:rgba(109,140,90,.15);
+            color:var(--verde);display:flex;align-items:center;justify-content:center;
+            font-size:25px;margin:0 auto 18px}
+  .fin{color:var(--muted);font-size:13px;margin-top:44px;padding-bottom:30px;text-align:center}
+  .oculto{display:none !important}
+
+  @media(prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;
+                         transition-duration:.01ms !important}
+  }
+</style>
+</head>
+<body>
+
+<div class="marco">
+
+  <div id="cargando" class="parte"><p>Abriendo tu enlace…</p></div>
+
+  <div id="bloqueado" class="parte oculto">
+    <h2>Enlace no disponible</h2>
+    <p id="bloqTexto"></p>
+  </div>
+
+  <!-- ================================================================ app -->
+  <div id="app" class="oculto">
+    <header>
+      <div class="firma"><span class="lente"></span><span class="rotulo">Foto Estudio Graciela</span></div>
+      <h1>Arma tu credencial</h1>
+      <p class="entrada">Sube el diseño de cada cara, acomódalo dentro del marco y mándanoslo.
+        Nosotros nos encargamos de imprimirlo.</p>
+    </header>
+
+    <section class="mesa">
+      <div class="mesa-tope">
+        <span class="rotulo">Vista previa · tamaño real CR79</span>
+        <span class="avance">
+          <span class="marca" id="marca-frente"></span>
+          <span class="marca" id="marca-reverso"></span>
+          <span class="mono" id="conteo">0 de 2</span>
+        </span>
+      </div>
+
+      <div class="caras">
+        <div>
+          <div class="cara-tope">
+            <span class="rotulo">Frente</span>
+            <span class="sello" id="sello-frente">Lista</span>
+          </div>
+          <div class="plaquita">
+            <span class="corte c-si"></span><span class="corte c-sd"></span>
+            <span class="corte c-ii"></span><span class="corte c-id"></span>
+            <div class="tarjeta" id="tarjeta-frente" tabindex="0" role="button"
+                 aria-label="Subir el diseño del frente"
+                 onclick="elegir('frente')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();elegir('frente')}">
+              <img id="img-frente" class="oculto" alt="">
+              <div class="invita" id="invita-frente">
+                <span class="cruz">+</span><b>Sube tu diseño</b><span>JPG o PNG</span>
+              </div>
+              <div class="zona"></div>
+            </div>
+          </div>
+          <div class="cara-pie">
+            <span class="mono" id="pie-frente">— × —</span>
+            <button class="relevo" id="relevo-frente" onclick="elegir('frente')">Cambiar</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="cara-tope">
+            <span class="rotulo">Reverso</span>
+            <span class="sello" id="sello-reverso">Lista</span>
+          </div>
+          <div class="plaquita">
+            <span class="corte c-si"></span><span class="corte c-sd"></span>
+            <span class="corte c-ii"></span><span class="corte c-id"></span>
+            <div class="tarjeta" id="tarjeta-reverso" tabindex="0" role="button"
+                 aria-label="Subir el diseño del reverso"
+                 onclick="elegir('reverso')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();elegir('reverso')}">
+              <img id="img-reverso" class="oculto" alt="">
+              <div class="invita" id="invita-reverso">
+                <span class="cruz">+</span><b>Sube tu diseño</b><span>JPG o PNG</span>
+              </div>
+              <div class="zona"></div>
+            </div>
+          </div>
+          <div class="cara-pie">
+            <span class="mono" id="pie-reverso">— × —</span>
+            <button class="relevo" id="relevo-reverso" onclick="elegir('reverso')">Cambiar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mesa-pie">
+        <span class="guion">—</span>
+        <span>La línea punteada marca la zona segura. Deja tus textos y logos por dentro:
+          lo que quede fuera se puede perder al cortar la tarjeta.</span>
+      </div>
+    </section>
+
+    <div class="detalles">
+      <div>
+        <label class="rotulo" for="cantidad">Cuántas tarjetas</label>
+        <input type="number" id="cantidad" value="1" min="1" max="500" inputmode="numeric">
+      </div>
+      <div>
+        <label class="rotulo" for="notas">Algo que debamos saber</label>
+        <textarea id="notas" placeholder="Opcional — fechas, detalles de color, lo que sea"></textarea>
+      </div>
+    </div>
+
+    <div class="repisa">
+      <span class="dictamen" id="dictamen" aria-live="polite">Faltan las dos caras.</span>
+      <button class="btn" id="btnEnviar" disabled onclick="enviar()">Enviar al estudio</button>
+    </div>
+  </div>
+
+  <div id="listo" class="parte oculto">
+    <div class="palomita">✓</div>
+    <h2>Recibido</h2>
+    <p id="listoTexto"></p>
+  </div>
+
+  <p class="fin">Foto Estudio Graciela · Iguala, Guerrero</p>
+</div>
+
+<!-- ================================================================= velo -->
+<div class="velo" id="velo" role="alertdialog" aria-live="assertive">
+  <div class="velo-caja">
+    <div class="prensa"></div>
+    <h2 id="veloTitulo">Trabajando</h2>
+    <p id="veloTexto">Un momento, por favor.</p>
+    <div class="medidor indef" id="medidor"><i id="medidorFill"></i></div>
+    <div class="no-cierres" id="noCierres">No cierres esta ventana</div>
+  </div>
+</div>
+
+<!-- ================================================================ modal -->
+<div class="modal" id="modal">
+  <div class="taller"><img id="recortar" alt=""></div>
+  <div class="mandos">
+    <span class="guia">Arrastra para mover y usa dos dedos o la rueda para acercar.
+      Lo que quede dentro del marco es lo que se imprime.</span>
+    <span class="juego">
+      <button class="btn-hueco" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn" onclick="aplicar()">Usar este encuadre</button>
+    </span>
+  </div>
+</div>
+
+<input type="file" id="archivo" accept="image/*" style="display:none">
+
+<script src="config.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+<script>
+var TOKEN = new URLSearchParams(location.search).get('t') || '';
+var ANCHO = 1014, ALTO = 639;
+var MAX_LADO = 4200;
+var caras = { frente: null, reverso: null };
+var caraActiva = null, cropper = null, enviando = false;
+
+/* ------------------------------------------------------------------ velo */
+
+function abrirVelo(titulo, texto, conBarra) {
+  document.getElementById('veloTitulo').textContent = titulo;
+  document.getElementById('veloTexto').textContent = texto;
+  var m = document.getElementById('medidor');
+  m.className = conBarra ? 'medidor' : 'medidor indef';
+  document.getElementById('medidorFill').style.width = '0%';
+  document.getElementById('velo').classList.add('on');
+}
+function progresoVelo(frac) {
+  document.getElementById('medidorFill').style.width = Math.round(frac * 100) + '%';
+}
+function cerrarVelo() {
+  document.getElementById('velo').classList.remove('on');
+}
+
+window.addEventListener('beforeunload', function (e) {
+  if (enviando) { e.preventDefault(); e.returnValue = ''; return ''; }
+});
+
+/* ------------------------------------------------------------------- api */
+
+async function api(accion, datos) {
+  var r = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(Object.assign({ accion: accion }, datos || {}))
+  });
+  var d = await r.json();
+  if (!d.ok) throw new Error(d.error || 'Algo salió mal.');
+  return d;
+}
+
+function subirConProgreso(payload, alAvanzar) {
+  return new Promise(function (res, rej) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', API_URL, true);
+    xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8');
+    xhr.upload.onprogress = function (e) {
+      if (e.lengthComputable) alAvanzar(e.loaded / e.total);
+    };
+    xhr.onload = function () {
+      try {
+        var d = JSON.parse(xhr.responseText);
+        d.ok ? res(d) : rej(new Error(d.error || 'Algo salió mal.'));
+      } catch (err) { rej(new Error('El estudio respondió algo inesperado. Inténtalo otra vez.')); }
+    };
+    xhr.onerror = function () {
+      rej(new Error('Se perdió la conexión. Revisa tu internet e inténtalo otra vez.'));
+    };
+    xhr.send(JSON.stringify(payload));
+  });
+}
+
+/* ----------------------------------------------------------------- inicio */
+
+(async function () {
+  try {
+    var r = await api('validarToken', { token: TOKEN });
+    ANCHO = r.ancho; ALTO = r.alto;
+    document.getElementById('cargando').classList.add('oculto');
+    document.getElementById('app').classList.remove('oculto');
+  } catch (e) {
+    document.getElementById('cargando').classList.add('oculto');
+    document.getElementById('bloqueado').classList.remove('oculto');
+    document.getElementById('bloqTexto').textContent = e.message;
+  }
+})();
+
+/* ---------------------------------------------------------------- recorte */
+
+function elegir(cara) {
+  caraActiva = cara;
+  var inp = document.getElementById('archivo');
+  inp.value = '';
+  inp.click();
+}
+
+document.getElementById('archivo').addEventListener('change', function (ev) {
+  var f = ev.target.files[0];
+  if (!f) return;
+  if (!/^image\//.test(f.type)) {
+    alert('Ese archivo no es una imagen. Sube un JPG o un PNG.');
+    return;
+  }
+  abrirVelo('Preparando tu imagen', 'Estamos abriendo el archivo. No tarda.', false);
+  setTimeout(function () { leerArchivo(f); }, 60);
+});
+
+function leerArchivo(f) {
+  var lector = new FileReader();
+  lector.onload = function (e) { reducirSiHaceFalta(e.target.result, abrirModal); };
+  lector.onerror = function () {
+    cerrarVelo();
+    alert('No pude leer ese archivo. Intenta con otro.');
+  };
+  lector.readAsDataURL(f);
+}
+
+function reducirSiHaceFalta(dataUrl, listo) {
+  var im = new Image();
+  im.onload = function () {
+    var lado = Math.max(im.width, im.height);
+    if (lado <= MAX_LADO) { listo(dataUrl); return; }
+    var k = MAX_LADO / lado;
+    var cv = document.createElement('canvas');
+    cv.width = Math.round(im.width * k);
+    cv.height = Math.round(im.height * k);
+    var cx = cv.getContext('2d');
+    cx.imageSmoothingQuality = 'high';
+    cx.drawImage(im, 0, 0, cv.width, cv.height);
+    listo(cv.toDataURL('image/jpeg', 0.95));
+  };
+  im.onerror = function () { cerrarVelo(); alert('Esa imagen no se pudo abrir.'); };
+  im.src = dataUrl;
+}
+
+function abrirModal(dataUrl) {
+  var img = document.getElementById('recortar');
+  img.src = dataUrl;
+  document.getElementById('modal').classList.add('on');
+  if (cropper) cropper.destroy();
+  cropper = new Cropper(img, {
+    aspectRatio: ANCHO / ALTO, viewMode: 1, autoCropArea: 1,
+    dragMode: 'move', background: false, responsive: true,
+    ready: function () { cerrarVelo(); }
+  });
+}
+
+function cerrarModal() {
+  document.getElementById('modal').classList.remove('on');
+  if (cropper) { cropper.destroy(); cropper = null; }
+}
+
+function aplicar() {
+  if (!cropper) return;
+  abrirVelo('Ajustando el encuadre', 'Guardando tu recorte a tamaño exacto.', false);
+
+  setTimeout(function () {
+    var canvas = cropper.getCroppedCanvas({
+      width: ANCHO, height: ALTO, imageSmoothingQuality: 'high', fillColor: '#fff'
+    });
+    caras[caraActiva] = canvas.toDataURL('image/jpeg', 0.92);
+
+    var img = document.getElementById('img-' + caraActiva);
+    img.src = caras[caraActiva];
+    img.classList.remove('oculto');
+    img.classList.remove('revelar');
+    void img.offsetWidth;
+    img.classList.add('revelar');
+
+    document.getElementById('invita-' + caraActiva).classList.add('oculto');
+    document.getElementById('sello-' + caraActiva).classList.add('on');
+    document.getElementById('marca-' + caraActiva).classList.add('on');
+    document.getElementById('relevo-' + caraActiva).classList.add('on');
+    document.getElementById('tarjeta-' + caraActiva).classList.add('puesta');
+    document.getElementById('pie-' + caraActiva).textContent = ANCHO + ' × ' + ALTO + ' px';
+
+    cerrarModal();
+    cerrarVelo();
+    revisar();
+  }, 60);
+}
+
+function revisar() {
+  var hechas = (caras.frente ? 1 : 0) + (caras.reverso ? 1 : 0);
+  document.getElementById('conteo').textContent = hechas + ' de 2';
+
+  var falta = [];
+  if (!caras.frente) falta.push('el frente');
+  if (!caras.reverso) falta.push('el reverso');
+
+  var btn = document.getElementById('btnEnviar');
+  var d = document.getElementById('dictamen');
+  if (falta.length) {
+    btn.disabled = true;
+    d.className = 'dictamen';
+    d.textContent = 'Falta ' + falta.join(' y ') + '.';
+  } else {
+    btn.disabled = false;
+    d.className = 'dictamen completo';
+    d.textContent = 'Todo listo. Al enviar, este enlace se cierra.';
+  }
+}
+
+/* ----------------------------------------------------------------- envío */
+
+async function enviar() {
+  var btn = document.getElementById('btnEnviar');
+  btn.disabled = true;
+  enviando = true;
+
+  abrirVelo('Enviando tu credencial',
+            'Estamos subiendo tus dos diseños al estudio.', true);
+
+  try {
+    var r = await subirConProgreso({
+      accion: 'guardarPedido',
+      token: TOKEN, frente: caras.frente, reverso: caras.reverso,
+      cantidad: document.getElementById('cantidad').value,
+      notas: document.getElementById('notas').value
+    }, function (frac) {
+      progresoVelo(frac);
+      if (frac >= 0.999) {
+        document.getElementById('veloTitulo').textContent = 'Guardando en el estudio';
+        document.getElementById('veloTexto').textContent =
+          'Ya llegaron tus diseños. Los estamos acomodando.';
+        document.getElementById('medidor').className = 'medidor indef';
+      }
+    });
+
+    enviando = false;
+    cerrarVelo();
+    document.getElementById('app').classList.add('oculto');
+    document.getElementById('listo').classList.remove('oculto');
+    document.getElementById('listoTexto').textContent =
+      'Tu pedido ' + r.pedido + ' llegó al estudio. Te avisamos en cuanto esté impreso.';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch (e) {
+    enviando = false;
+    cerrarVelo();
+    btn.disabled = false;
+    var d = document.getElementById('dictamen');
+    d.className = 'dictamen';
+    d.textContent = e.message;
+  }
+}
+</script>
+</body>
+</html>
